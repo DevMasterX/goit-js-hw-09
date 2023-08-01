@@ -1,10 +1,8 @@
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
-// import Notiflix from 'notiflix';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const startButton = document.querySelector('[data-start]');
-// const stopButton = document.querySelector('[data-stop]');
 const daysDisplay = document.querySelector('[data-days]');
 const hoursDisplay = document.querySelector('[data-hours]');
 const minutesDisplay = document.querySelector('[data-minutes]');
@@ -15,36 +13,35 @@ startButton.disabled = true;
 
 const timer = {
   intervalId: null,
-  isActive: false,
-  start() {
-    if (this.isActive) {
-      return;
-    }
 
-    const startTime = Date.now();
-    this.isActive = true;
+  start() {
+    inputData.disabled = true;
 
     this.intervalId = setInterval(() => {
+      const selectedData = new Date(inputData.value);
       const currentTime = Date.now();
-      const deltaTime = currentTime - startTime;
+      const deltaTime = selectedData - currentTime;
       const time = convertMs(deltaTime);
       updateClockFace(time);
+      if (deltaTime < 10000) {
+        secondsDisplay.classList.add('red');
+      }
+      if (deltaTime < 1000) {
+        Notify.success('The timer has expired');
+        clearInterval(this.intervalId);
+        inputData.disabled = false;
+        secondsDisplay.classList.remove('red');
+      }
+      startButton.removeEventListener('click', onstartCountClick);
     }, 1000);
-  },
-  stop() {
-    clearInterval(this.intervalId);
-    this.isActive = false;
   },
 };
 
-// timer.start();
+startButton.addEventListener('click', onstartCountClick);
 
-startButton.addEventListener('click', () => {
+function onstartCountClick() {
   timer.start();
-});
-// stopButton.addEventListener('click', () => {
-//   timer.stop();
-// });
+}
 
 function updateClockFace({ days, hours, minutes, seconds }) {
   daysDisplay.textContent = days;
@@ -93,5 +90,3 @@ const options = {
 };
 
 flatpickr(inputData, options);
-
-console.log(4);
